@@ -8,11 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.technerd.giphyandroidapp.core.util.APIResult
 import com.technerd.giphyandroidapp.features.trendinggifs.domain.model.GIFListResponse
+import com.technerd.giphyandroidapp.features.trendinggifs.domain.model.PaginationRequest
 import com.technerd.giphyandroidapp.features.trendinggifs.domain.usecase.GetSearchedGIFs
 import com.technerd.giphyandroidapp.features.trendinggifs.domain.usecase.GetTrendingGIFs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -47,7 +49,7 @@ class TrendingGIFsViewModel @Inject constructor(
 
     fun fetchTrendingGIFs() {
         viewModelScope.launch {
-            _trendingGIFState.value = getTrendingGIFs()
+            _trendingGIFState.value = getTrendingGIFs(PaginationRequest(limit = 10, offset = 0))
         }
     }
 

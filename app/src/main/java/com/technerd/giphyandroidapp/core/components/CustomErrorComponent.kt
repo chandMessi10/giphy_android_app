@@ -1,9 +1,17 @@
 package com.technerd.giphyandroidapp.core.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -11,6 +19,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -20,7 +31,9 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.technerd.giphyandroidapp.R
 
 @Composable
-fun CustomErrorComponent(desiredRawAnimationFile: Int? = null) {
+fun CustomErrorComponent(
+    desiredRawAnimationFile: Int? = null, additionalButtonFunction: (() -> Unit)? = null,
+) {
     // to keep track if the animation is playing
     // and play pause accordingly
     val isPlaying by remember {
@@ -67,8 +80,25 @@ fun CustomErrorComponent(desiredRawAnimationFile: Int? = null) {
         LottieAnimation(
             composition = composition,
             progress = { progressMethod },
-            modifier = Modifier.size(400.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(350.dp),
         )
+        AnimatedVisibility(visible = additionalButtonFunction != null) {
+            TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                if (additionalButtonFunction != null) {
+                    additionalButtonFunction()
+                }
+            }) {
+                Text(
+                    "Try Again",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.subtitle1.copy(
+                        color = Color.Black, fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+        }
     }
 
 }

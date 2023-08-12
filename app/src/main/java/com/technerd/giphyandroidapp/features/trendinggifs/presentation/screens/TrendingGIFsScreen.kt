@@ -1,6 +1,5 @@
 package com.technerd.giphyandroidapp.features.trendinggifs.presentation.screens
 
-import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -33,7 +32,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,6 +55,7 @@ fun TrendingGIFsScreen(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     val context = LocalContext.current
+
     // for pull down to refresh of trending gifs
     val refreshScope = rememberCoroutineScope()
     var refreshing by remember { mutableStateOf(false) }
@@ -210,7 +209,7 @@ fun TrendingGIFsScreen(
                     }
 
                     is APIResult.Error -> {
-                        CustomErrorComponent()
+                        CustomErrorComponent(additionalButtonFunction = { refresh() })
                         Toast.makeText(
                             LocalContext.current, "Error fetching trending gifs", Toast.LENGTH_SHORT
                         ).show()
@@ -224,7 +223,6 @@ fun TrendingGIFsScreen(
                     }
                 }
             }
-
         }
         PullRefreshIndicator(
             refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter)
