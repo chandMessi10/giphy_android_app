@@ -1,5 +1,6 @@
 package com.technerd.giphyandroidapp.features.trendinggifs.presentation.screens
 
+import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -32,6 +33,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -54,7 +56,7 @@ fun TrendingGIFsScreen(
     val searchValue by viewModel.searchInputFlow.collectAsState()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
-
+    val context = LocalContext.current
     // for pull down to refresh of trending gifs
     val refreshScope = rememberCoroutineScope()
     var refreshing by remember { mutableStateOf(false) }
@@ -68,80 +70,103 @@ fun TrendingGIFsScreen(
 
     val pullRefreshState = rememberPullRefreshState(refreshing, ::refresh)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = { focusManager.clearFocus() })
-            }
-            .padding(8.dp),
-    ) {
-        NoiceTextField(
-            modifier = Modifier.focusRequester(focusRequester),
-            textFieldValue = searchValue,
-            textFieldLabel = "Search GIFs",
-            onValueChangeMethod = {
-                viewModel.showSearchList = it.isNotEmpty()
-                viewModel.setSearchForm(it)
-            },
-            desiredKeyboardActions = KeyboardActions(),
-        )
-        if (viewModel.showSearchList) {
-            when (val searchGIFListResponse = viewModel.searchedState.value) {
-                is APIResult.Loading -> CustomProgressIndicator()
-                is APIResult.Success -> LazyColumn(
-                    contentPadding = PaddingValues(
-                        horizontal = 8.dp, vertical = 4.dp
-                    )
-                ) {
-                    item {
-                        Text(
-                            "Searched GIFs",
-                            textAlign = TextAlign.Start,
-                            style = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    searchGIFListResponse.data?.let { gifList ->
-                        items(
-                            count = gifList.data.size,
-                            itemContent = {
-                                ImageExample(
-                                    gifHeight = gifList.data[it].images.original.height,
-                                    gifUrl = gifList.data[it].images.original.url,
-                                    favFunction = {
-                                        favViewModel.insertFavouriteGIF(
-                                            FavouriteGIF(
-                                                gifURL = gifList.data[it].images.original.url,
-                                                gifIDValue = gifList.data[it].id,
-                                            )
-                                        )
-                                    },
-                                )
-                            },
-                        )
-                    }
-                }
+    // to handle currently favourite/un-favourite GIF
+    var currentGifID by remember { mutableStateOf("") }
 
-                is APIResult.Error -> {
-                    CustomErrorComponent()
-                    Toast.makeText(
-                        LocalContext.current, "Error fetching searched gifs", Toast.LENGTH_SHORT
-                    ).show()
+    Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { focusManager.clearFocus() })
                 }
+                .padding(8.dp),
+        ) {
+            NoiceTextField(
+                modifier = Modifier.focusRequester(focusRequester),
+                textFieldValue = searchValue,
+                textFieldLabel = "Search GIFs",
+                onValueChangeMethod = {
+                    viewModel.setSearchForm(it)
+                    viewModel.showSearchList = it.isNotEmpty()
+                    if (it.isEmpty()) {
+                        currentGifID = ""
+                    }
+                },
+                desiredKeyboardActions = KeyboardActions(),
+            )
+            if (viewModel.showSearchList) {
+                when (val searchGIFListResponse = viewModel.searchedState.value) {
+                    is APIResult.Loading -> CustomProgressIndicator()
+                    is APIResult.Success -> LazyColumn(
+                        contentPadding = PaddingValues(
+                            horizontal = 8.dp, vertical = 4.dp
+                        )
+                    ) {
+                        item {
+                            Text(
+                                "Searched GIFs",
+                                textAlign = TextAlign.Start,
+                                style = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        searchGIFListResponse.data?.let { gifList ->
+                            items(
+                                count = gifList.data.size,
+                                itemContent = {
+                                    ImageExample(
+                                        gifHeight = gifList.data[it].images.original.height,
+                                        gifUrl = gifList.data[it].images.original.url,
+                                        favFunction = {
+                                            if (favViewModel.isGIFFavourite(gifList.data[it].id) || currentGifID != "") {
+                                                favViewModel.deleteFavouriteGIF(gifList.data[it].id)
+                                                currentGifID = ""
+                                                Toast.makeText(
+                                                    context,
+                                                    "GIF removed successfully",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            } else {
+                                                favViewModel.insertFavouriteGIF(
+                                                    FavouriteGIF(
+                                                        gifURL = gifList.data[it].images.original.url,
+                                                        gifIDValue = gifList.data[it].id,
+                                                    )
+                                                )
+                                                currentGifID = gifList.data[it].id
+                                                Toast.makeText(
+                                                    context,
+                                                    "GIF added successfully",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        },
+                                        isFav = favViewModel.isGIFFavourite(gifList.data[it].id) || currentGifID != "",
+                                    )
+                                },
+                            )
+                        }
+                    }
 
-                else -> {
-                    CustomErrorComponent()
-                    Toast.makeText(
-                        LocalContext.current, "Something went wrong", Toast.LENGTH_SHORT
-                    ).show()
+                    is APIResult.Error -> {
+                        CustomErrorComponent()
+                        Toast.makeText(
+                            LocalContext.current, "Error fetching searched gifs", Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+                    else -> {
+                        CustomErrorComponent()
+                        Toast.makeText(
+                            LocalContext.current, "Something went wrong", Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-            }
-        } else {
-            when (val trendingGIFListResponse = viewModel.trendingState.value) {
-                is APIResult.Loading -> CustomProgressIndicator()
-                is APIResult.Success -> Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
-                    LazyColumn(
+            } else {
+                when (val trendingGIFListResponse = viewModel.trendingState.value) {
+                    is APIResult.Loading -> CustomProgressIndicator()
+                    is APIResult.Success -> LazyColumn(
                         contentPadding = PaddingValues(
                             horizontal = 8.dp, vertical = 4.dp
                         )
@@ -150,40 +175,59 @@ fun TrendingGIFsScreen(
                             items(
                                 count = gifList.data.size,
                                 itemContent = {
-                                    ImageExample(gifHeight = gifList.data[it].images.original.height,
+                                    ImageExample(
+                                        gifHeight = gifList.data[it].images.original.height,
                                         gifUrl = gifList.data[it].images.original.url,
                                         favFunction = {
-                                            favViewModel.insertFavouriteGIF(
-                                                FavouriteGIF(
-                                                    gifURL = gifList.data[it].images.original.url,
-                                                    gifIDValue = gifList.data[it].id,
+                                            if (favViewModel.isGIFFavourite(gifList.data[it].id) || currentGifID != "") {
+                                                favViewModel.deleteFavouriteGIF(gifList.data[it].id)
+                                                currentGifID = ""
+                                                Toast.makeText(
+                                                    context,
+                                                    "GIF removed successfully",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            } else {
+                                                favViewModel.insertFavouriteGIF(
+                                                    FavouriteGIF(
+                                                        gifURL = gifList.data[it].images.original.url,
+                                                        gifIDValue = gifList.data[it].id,
+                                                    )
                                                 )
-                                            )
-                                        })
+                                                currentGifID = gifList.data[it].id
+                                                Toast.makeText(
+                                                    context,
+                                                    "GIF added successfully",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        },
+                                        isFav = favViewModel.isGIFFavourite(gifList.data[it].id) || currentGifID != "",
+                                    )
                                 },
                             )
                         }
                     }
-                    PullRefreshIndicator(
-                        refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter)
-                    )
-                }
 
-                is APIResult.Error -> {
-                    CustomErrorComponent()
-                    Toast.makeText(
-                        LocalContext.current, "Error fetching trending gifs", Toast.LENGTH_SHORT
-                    ).show()
-                }
+                    is APIResult.Error -> {
+                        CustomErrorComponent()
+                        Toast.makeText(
+                            LocalContext.current, "Error fetching trending gifs", Toast.LENGTH_SHORT
+                        ).show()
+                    }
 
-                else -> {
-                    CustomErrorComponent()
-                    Toast.makeText(
-                        LocalContext.current, "Something went wrong", Toast.LENGTH_SHORT
-                    ).show()
+                    else -> {
+                        CustomErrorComponent()
+                        Toast.makeText(
+                            LocalContext.current, "Something went wrong", Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
-        }
 
+        }
+        PullRefreshIndicator(
+            refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter)
+        )
     }
 }

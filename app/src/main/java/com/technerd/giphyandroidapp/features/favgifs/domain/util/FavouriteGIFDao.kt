@@ -11,8 +11,8 @@ interface FavouriteGIFDao {
     @Insert
     fun insertGIF(gif: FavouriteGIF)
 
-    @Query("DELETE FROM favgifs WHERE gifID = :gifId")
-    fun deleteGIF(gifId: String)
+    @Query("DELETE FROM favgifs WHERE gifIDValue = :gifIdValue")
+    fun deleteGIF(gifIdValue: String)
 
     @Query("SELECT * FROM favgifs")
     fun getAllFavouriteGIFs(): LiveData<List<FavouriteGIF>>

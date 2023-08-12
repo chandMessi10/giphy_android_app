@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.technerd.giphyandroidapp.features.favgifs.domain.model.FavouriteGIF
 
-@Database(entities = [(FavouriteGIF::class)], version = 1)
+@Database(entities = [(FavouriteGIF::class)], version = 2)
 abstract class FavouriteGIFRoomDatabase : RoomDatabase() {
     abstract fun favouriteGIFDao(): FavouriteGIFDao
 

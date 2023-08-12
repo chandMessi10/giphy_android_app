@@ -20,24 +20,22 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.technerd.giphyandroidapp.R
 
 @Composable
-fun CustomErrorComponent() {
+fun CustomErrorComponent(desiredRawAnimationFile: Int? = null) {
     // to keep track if the animation is playing
     // and play pause accordingly
-    var isPlaying by remember {
+    val isPlaying by remember {
         mutableStateOf(true)
     }
 
     // for speed
-    var speed by remember {
+    val speed by remember {
         mutableFloatStateOf(1f)
     }
 
     // remember lottie composition, which
     // accepts the lottie composition result
     val composition by rememberLottieComposition(
-        LottieCompositionSpec
-            // here `something_went_wrong` is the file name of lottie file
-            .RawRes(R.raw.something_went_wrong)
+        LottieCompositionSpec.RawRes(desiredRawAnimationFile ?: R.raw.something_went_wrong)
     )
 
     // to control the animation

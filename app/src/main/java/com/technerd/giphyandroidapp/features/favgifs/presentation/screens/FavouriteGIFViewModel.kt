@@ -1,12 +1,9 @@
 package com.technerd.giphyandroidapp.features.favgifs.presentation.screens
 
 import android.app.Application
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import com.technerd.giphyandroidapp.features.favgifs.domain.model.FavouriteGIF
 import com.technerd.giphyandroidapp.features.favgifs.domain.repository.FavouriteGIFRepository
 import com.technerd.giphyandroidapp.features.favgifs.domain.util.FavouriteGIFRoomDatabase
@@ -14,19 +11,24 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class FavouriteGIFViewModel @Inject constructor(application: Application) : ViewModel() {
-    val allFavouriteGIFs: LiveData<List<FavouriteGIF>>
-    private val repository: FavouriteGIFRepository
-    val loadingState = MutableLiveData(true)
-    val successState = MutableLiveData(false)
-    val failureState = MutableLiveData(false)
-    private val viewLifecycleOwner = MutableLiveData<LifecycleOwner>()
+class FavouriteGIFViewModel @Inject constructor(
+    application: Application,
+) : ViewModel() {
+    lateinit var allFavouriteGIFs: LiveData<List<FavouriteGIF>>
+    private lateinit var repository: FavouriteGIFRepository
+
+    var isLoading = mutableStateOf(true)
 
     init {
+        fetchSavedData(application)
+    }
+
+    fun fetchSavedData(application: Application) {
         val favouriteGIFDB = FavouriteGIFRoomDatabase.getInstance(application)
         val favouriteGIFDao = favouriteGIFDB.favouriteGIFDao()
         repository = FavouriteGIFRepository(favouriteGIFDao)
         allFavouriteGIFs = repository.allFavouriteGIFs
+        isLoading.value = false
     }
 
     fun insertFavouriteGIF(favouriteGIF: FavouriteGIF) {
@@ -37,15 +39,13 @@ class FavouriteGIFViewModel @Inject constructor(application: Application) : View
         repository.deleteGIF(favouriteGIFId)
     }
 
-    fun getLoadingState(): LiveData<Boolean> {
-        return loadingState
-    }
-
-    fun getSuccessState(): LiveData<Boolean> {
-        return successState
-    }
-
-    fun getFailureState(): LiveData<Boolean> {
-        return failureState
+    fun isGIFFavourite(currentGifIDValue: String): Boolean {
+        val allFavouriteGIFs = allFavouriteGIFs.value ?: return false
+        allFavouriteGIFs.forEach { favouriteGif ->
+            if (favouriteGif.gifIDValue == currentGifIDValue) {
+                return true
+            }
+        }
+        return false
     }
 }

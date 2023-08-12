@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,7 +30,7 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 
 @Composable
-fun ImageExample(gifHeight: Int, gifUrl: String, favFunction: () -> Unit) {
+fun ImageExample(gifHeight: Int, gifUrl: String, favFunction: () -> Unit, isFav: Boolean) {
     val imageLoader = ImageLoader.Builder(LocalContext.current).components {
         if (Build.VERSION.SDK_INT >= 28) {
             add(ImageDecoderDecoder.Factory())
@@ -60,7 +63,10 @@ fun ImageExample(gifHeight: Int, gifUrl: String, favFunction: () -> Unit) {
                 .align(alignment = Alignment.TopEnd)
         ) {
             IconButton(onClick = favFunction) {
-                Icon(imageVector = Icons.Filled.FavoriteBorder, contentDescription = null)
+                Icon(
+                    imageVector = if (isFav) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = null
+                )
             }
         }
     }
