@@ -4,16 +4,16 @@ import com.google.gson.annotations.SerializedName
 
 data class GIFDetail(
     @SerializedName("type") val type: String,
-    @SerializedName("url") val url: String,
-    @SerializedName("embed_url") val embedURL: String,
+    @SerializedName("id") val id: String,
     @SerializedName("images") val images: Images,
 ) : java.io.Serializable
 
 data class Images(
-    @SerializedName("fixed_height") val fixedHeight: FixedHeightImageDetail,
+    @SerializedName("original") val original: ImageDetail,
+    @SerializedName("fixed_height") val fixedHeight: ImageDetail,
 ) : java.io.Serializable
 
-data class FixedHeightImageDetail(
+data class ImageDetail(
     @SerializedName("height") val height: Int,
     @SerializedName("url") val url: String,
 ) : java.io.Serializable

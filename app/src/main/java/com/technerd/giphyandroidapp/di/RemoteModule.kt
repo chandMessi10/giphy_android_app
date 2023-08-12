@@ -12,6 +12,6 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object RemoteModule {
     @Provides
-    fun provideRemoteDataSource(movieApi: AppApi): TrendingGIFsRemoteDataSource =
-        TrendingGIFsRemoteDataSourceImpl(movieApi)
+    fun provideRemoteDataSource(appApi: AppApi): TrendingGIFsRemoteDataSource =
+        TrendingGIFsRemoteDataSourceImpl(appApi)
 }
