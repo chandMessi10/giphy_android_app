@@ -141,7 +141,7 @@ fun TrendingGIFsScreen(
                                                 ).show()
                                             }
                                         },
-                                        isFav = favViewModel.isGIFFavourite(gifList.data[it].id) || currentGifID != "",
+                                        isFav = favViewModel.isGIFFavourite(gifList.data[it].id) || currentGifID == gifList.data[it].id,
                                     )
                                 },
                             )
@@ -201,7 +201,7 @@ fun TrendingGIFsScreen(
                                                 ).show()
                                             }
                                         },
-                                        isFav = favViewModel.isGIFFavourite(gifList.data[it].id) || currentGifID != "",
+                                        isFav = favViewModel.isGIFFavourite(gifList.data[it].id) || currentGifID == gifList.data[it].id,
                                     )
                                 },
                             )
