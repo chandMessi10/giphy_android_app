@@ -8,12 +8,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.technerd.giphyandroidapp.features.dashboard.presentation.screens.DashboardScreen
 import com.technerd.giphyandroidapp.features.favgifs.presentation.screens.FavouriteGifsScreen
+import com.technerd.giphyandroidapp.features.navbar.presentation.NavBarScreen
 import com.technerd.giphyandroidapp.features.trendinggifs.presentation.screens.TrendingGIFsScreen
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun NavGraph(navHostController: NavHostController) {
-    NavHost(navController = navHostController, startDestination = Screen.Dashboard.route) {
+    NavHost(navController = navHostController, startDestination = Screen.NavBar.route) {
+        composable(route = Screen.NavBar.route) {
+            NavBarScreen()
+        }
         composable(route = Screen.Dashboard.route) {
             DashboardScreen()
         }
